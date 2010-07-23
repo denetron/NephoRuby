@@ -27,7 +27,7 @@ module NephoRuby
       
       uri                     = URI.parse(self.sandbox? ? @@sandbox_url : @@production_url)
       
-      request                 = Net::HTTP::Post.new("/" + action)
+      request                 = Net::HTTP::Get.new("/" + action)
       request.basic_auth(self.username, self.password)
       request.set_form_data(params)
       
@@ -35,12 +35,15 @@ module NephoRuby
       http.use_ssl = true
       http.verify_mode  = OpenSSL::SSL::VERIFY_PEER
       http.ca_path      = "./certs"
-        
-      http.request(request)
+      
+      response = http.request(request)
+      self.parse_response(response.body)
     end
     
-    def parse_response
+    def parse_response(response)
+      json_hash = JSON.parse(response)
       
+      puts ::NephoRuby::Response.new(:data => json_hash["data"], :success => json_hash["success"], :message => json_hash["message"]).inspect
     end
     
     def verify_verb(verb)

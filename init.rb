@@ -1,1 +1,3 @@
-require 'lib/nepho_ruby.rb'
+require 'json'
+require 'lib/nepho_ruby'
+require 'lib/response'
