@@ -8,10 +8,6 @@ module NephoRuby
       self.success  = options[:success]
     end
     
-    def data
-      self.data
-    end
-    
     def success?
       !!self.success
     end

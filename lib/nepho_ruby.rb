@@ -10,6 +10,8 @@ module NephoRuby
       attr_accessor :sandbox
     end
     
+    include ApiMethods
+    
     @@production_url = "https://api.nephoscale.com:443"
     @@sandbox_url = @@production_url # Right now there is no sandbox
     
@@ -22,12 +24,19 @@ module NephoRuby
       true
     end
     
+    private
     def commit(action, verb, params = {})
       verify_verb(verb)
       
       uri                     = URI.parse(self.sandbox? ? @@sandbox_url : @@production_url)
       
-      request                 = Net::HTTP::Get.new("/" + action)
+      case verb
+      when "get"
+        request                 = Net::HTTP::Get.new("/" + action)
+      when "post"
+        request                 = Net::HTTP::Post.new("/" + action)
+      end
+      
       request.basic_auth(self.username, self.password)
       request.set_form_data(params)
       
@@ -37,13 +46,13 @@ module NephoRuby
       http.ca_path      = "./certs"
       
       response = http.request(request)
-      self.parse_response(response.body)
+      parse_response(response.body)
     end
     
     def parse_response(response)
       json_hash = JSON.parse(response)
       
-      puts ::NephoRuby::Response.new(:data => json_hash["data"], :success => json_hash["success"], :message => json_hash["message"]).inspect
+      ::NephoRuby::Response.new(:data => json_hash["data"], :success => json_hash["success"], :message => json_hash["message"])
     end
     
     def verify_verb(verb)
@@ -51,5 +60,6 @@ module NephoRuby
     end
   end
   
+  class InvalidServerType < ArgumentError; end
   class HTTPInvalidVerb < ArgumentError; end
 end

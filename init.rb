@@ -1,3 +1,7 @@
 require 'json'
+require 'lib/api_methods'
 require 'lib/nepho_ruby'
 require 'lib/response'
+require 'lib/server'
+require 'lib/cloud_server'
+require 'lib/image'
