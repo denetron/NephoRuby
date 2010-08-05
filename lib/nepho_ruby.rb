@@ -47,15 +47,16 @@ module NephoRuby
       request.basic_auth(self.username, self.password)
       request.set_form_data(params) unless verb == "get"
       
-      puts request.body
-      
       http = Net::HTTP.new(uri.host, uri.port)
       http.use_ssl = true
       http.verify_mode  = OpenSSL::SSL::VERIFY_PEER
       http.ca_path      = "./certs"
       
       response = http.request(request)
-      parse_response(response.body)
+      response = parse_response(response.body)
+      
+      raise ApiError, response.message unless response.success?
+      response
     end
     
     def parse_response(response)

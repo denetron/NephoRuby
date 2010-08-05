@@ -10,8 +10,6 @@ module NephoRuby
       when :cloud
         response = commit("server/cloud/", "get", {})
         
-        raise ApiError unless response.success?
-        
         for vm in response.data
           image = ::NephoRuby::Image.new(:agent => vm["image"]["has_agent"],
                                          :deployable_type => vm["image"]["deployable_type"],
@@ -41,24 +39,23 @@ module NephoRuby
       servers
     end
     
+    # https://kb.nephoscale.com/api/server.html#servercloud
+    # https://kb.nephoscale.com/api/server.html#serverdedicated
     def create_server(server)
-#      case server.class
-#      when NephoRuby::CloudServer
-puts server.to_params.to_json
-        response = commit("server/cloud/", "post", server.to_params.to_json)
-#      when NephoRuby::DedicatedServer
-#        
-#      else
-#        raise InvalidServerType, "Only cloud or dedicated server types can be added"
-#      end
+      case server.class.to_s
+      when "NephoRuby::CloudServer"
+        response = commit("server/cloud/", "post", server.to_params)
+      when "NephoRuby::DedicatedServer"
+        
+      else
+        raise InvalidServerType, "Only cloud or dedicated server types can be added"
+      end
     end
     
     # https://kb.nephoscale.com/api/quickstart.html#instance-list
     def get_instance_types
       instances = []
       response = commit("server/type/cloud/", "get", {})
-      
-      raise ApiError unless response.success?
       
       for instance in response.data
         instances.push(::NephoRuby::Instance.new( :id => instance["id"],
@@ -75,8 +72,6 @@ puts server.to_params.to_json
     def get_image_list
       images = []
       response = commit("image/server/", "get", {})
-      
-      raise ApiError unless response.success?
       
       for image in response.data
         images.push(::NephoRuby::Image.new( :id => image["id"],
@@ -98,8 +93,6 @@ puts server.to_params.to_json
     def get_ip_addresses(version = 4, selector = :unassigned)
       addresses = []
       response = commit("network/ipaddress/", "get", {:type => 0, :version => version, :unassigned => (selector == :unassigned ? 'true' : 'false')})
-      puts response.inspect
-      raise ApiError unless response.success?
       
       for address in response.data
         addresses.push(IPAddr.new(address["ipaddress"]))
@@ -108,11 +101,10 @@ puts server.to_params.to_json
       addresses
     end
     
+    
     def get_credentials
       credentials = []
       response = commit("key/", "get", {})
-      
-      raise ApiError unless response.success?
       
       for cred in response.data
         credentials.push(NephoRuby::Credential.new( :id => cred["id"],
