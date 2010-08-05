@@ -7,8 +7,9 @@ module NephoRuby
       when :cloud
         response = commit("server/cloud/", "get", {})
         
+        raise ApiError unless response.success?
+        
         for vm in response.data
-          #     attr_accessor :agent, :deployable_type, :default, :creation_time, :id, :max_cpu, :active, :base_type, :max_memory, :name, :arch
           image = ::NephoRuby::Image.new(:agent => vm["image"]["has_agent"],
                                          :deployable_type => vm["image"]["deployable_type"],
                                          :default => vm["image"]["is_default"],
@@ -22,8 +23,6 @@ module NephoRuby
                                          :arch => vm["image"]["architecture"])
                                          
           servers.push(::NephoRuby::CloudServer.new(:memory =>        vm["memory"],
-                                                    :os =>            vm["image"]["friendly_name"],
-                                                    :arch =>          vm["image"]["architecture"],
                                                     :power_state =>   vm["power_status"],
                                                     :hostname =>      vm["hostname"],
                                                     :ip_addresses =>  vm["ipaddresses"].split(", "),

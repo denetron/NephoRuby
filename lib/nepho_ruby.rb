@@ -28,13 +28,13 @@ module NephoRuby
     def commit(action, verb, params = {})
       verify_verb(verb)
       
-      uri                     = URI.parse(self.sandbox? ? @@sandbox_url : @@production_url)
+      uri = URI.parse(self.sandbox? ? @@sandbox_url : @@production_url)
       
       case verb
       when "get"
-        request                 = Net::HTTP::Get.new("/" + action)
+        request = Net::HTTP::Get.new("/" + action)
       when "post"
-        request                 = Net::HTTP::Post.new("/" + action)
+        request = Net::HTTP::Post.new("/" + action)
       end
       
       request.basic_auth(self.username, self.password)
@@ -60,6 +60,7 @@ module NephoRuby
     end
   end
   
+  class ApiError < StandardError; end
   class InvalidServerType < ArgumentError; end
   class HTTPInvalidVerb < ArgumentError; end
 end
