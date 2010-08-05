@@ -23,7 +23,8 @@ module NephoRuby
                                          :name => vm["image"]["friendly_name"],
                                          :arch => vm["image"]["architecture"])
                                          
-          servers.push(::NephoRuby::CloudServer.new(:memory =>        vm["memory"],
+          servers.push(::NephoRuby::CloudServer.new(:id =>            vm["id"],
+                                                    :memory =>        vm["memory"],
                                                     :power_state =>   vm["power_status"],
                                                     :hostname =>      vm["hostname"],
                                                     :ip_addresses =>  vm["ipaddresses"].split(", "),
@@ -44,9 +45,29 @@ module NephoRuby
     def create_server(server)
       case server.class.to_s
       when "NephoRuby::CloudServer"
-        response = commit("server/cloud/", "post", server.to_params)
+        commit("server/cloud/", "post", server.to_params)
       when "NephoRuby::DedicatedServer"
-        
+        commit("server/dedicated/", "post", server.to_params)
+      else
+        raise InvalidServerType, "Only cloud or dedicated server types can be added"
+      end
+    end
+    
+    def power_control(server, action)
+      case server.class.to_s
+      when "NephoRuby::CloudServer"
+        commit("/server/cloud/#{server.id}/initiator/#{action.to_s}/", "post", {})
+      when "NephoRuby::DedicatedServer"
+        commit("/server/dedicated/#{server.id}/initiator/#{action.to_s}/", "post", {})
+      end
+    end
+    
+    def destroy_server(server)
+      case server.class.to_s
+      when "NephoRuby::CloudServer"
+        commit("server/cloud/#{server.id}/", "delete", {})
+      when "NephoRuby::DedicatedServer"
+        commit("server/dedicated/#{server.id}/", "delete", {})
       else
         raise InvalidServerType, "Only cloud or dedicated server types can be added"
       end

@@ -1,8 +1,9 @@
 module NephoRuby
   class Server
-    attr_accessor :memory, :power_state, :hostname, :ip_addresses, :created_at, :image, :instance_type, :credential
+    attr_accessor :id, :memory, :power_state, :hostname, :ip_addresses, :created_at, :image, :instance_type, :credential
     
     def initialize(options = {})
+      self.id             = options[:id]
       self.memory         = options[:memory]
       self.power_state    = options[:power_state]
       self.hostname       = options[:hostname]
@@ -24,6 +25,7 @@ module NephoRuby
     
     def to_params
       {
+        :id => self.id || nil,
         :hostname => self.hostname,
         :friendly_name => self.hostname,
         :image => self.image.id,
