@@ -35,6 +35,10 @@ module NephoRuby
         request = Net::HTTP::Get.new("/" + action)
       when "post"
         request = Net::HTTP::Post.new("/" + action)
+      when "put"
+        request = Net::HTTP::Put.new("/" + action)
+      when "delete"
+        request = Net::HTTP::Delete.new("/" + action)
       end
       
       request.basic_auth(self.username, self.password)
