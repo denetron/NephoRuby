@@ -9,5 +9,14 @@ module NephoRuby
       self.name         = options[:name]
       self.description  = options[:description]
     end
+    
+    def to_params
+      {
+        :ram          => self.ram,
+        :storage      => self.storage,
+        :name         => self.name,
+        :description  => self.description
+      }
+    end
   end
 end

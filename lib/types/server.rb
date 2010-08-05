@@ -25,15 +25,15 @@ module NephoRuby
     
     def to_params
       {
-        :id => self.id || nil,
-        :hostname => self.hostname,
-        :friendly_name => self.hostname,
-        :image => self.image.id,
-        :ipaddress_public => self.ip_addresses.first,
-        :ipaddress_private => self.ip_addresses.last,
-        :key_type => 2,
-        :key => (self.credential ? self.credential.id : nil),
-        :type => (self.instance_type ? self.instance_type.id : nil)
+        :id                 => self.id || nil,
+        :hostname           => self.hostname,
+        :friendly_name      => self.hostname,
+        :image              => self.image.id,
+        :ipaddress_public   => self.ip_addresses.first,
+        :ipaddress_private  => self.ip_addresses.last,
+        :key_type           => 2,
+        :key                => (self.credential ? self.credential.id : nil),
+        :type               => (self.instance_type ? self.instance_type.id : nil)
       }
     end
   end
