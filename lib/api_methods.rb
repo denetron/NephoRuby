@@ -11,56 +11,32 @@ module NephoRuby
         response = commit("server/cloud/", "get", {})
         
         for vm in response.data
-          image = ::NephoRuby::Image.new(:agent           => vm["image"]["has_agent"],
-                                         :deployable_type => vm["image"]["deployable_type"],
-                                         :default         => vm["image"]["is_default"],
-                                         :creation_time   => vm["image"]["create_time"],
-                                         :id              => vm["image"]["id"],
-                                         :max_cpu         => vm["image"]["max_cpu"],
-                                         :active          => vm["image"]["is_active"],
-                                         :base_type       => vm["image"]["base_type"],
-                                         :max_memory      => vm["image"]["max_memory"],
-                                         :name            => vm["image"]["friendly_name"],
-                                         :arch            => vm["image"]["architecture"])
-                                         
-          servers.push(::NephoRuby::CloudServer.new(:id           => vm["id"],
-                                                    :memory       => vm["memory"],
-                                                    :power_state  => vm["power_status"],
-                                                    :hostname     => vm["hostname"],
-                                                    :ip_addresses => vm["ipaddresses"].split(", ").map { |i| IPAddr.new(i) },
-                                                    :created_at   => vm["create_time"],
-                                                    :image        => image))
-    
+          servers.push(parse_cloud_json(vm))
         end
       when :dedicated
         response = commit("server/dedicated/", "get", {})
         
         for dedicated in response.data
-          image = ::NephoRuby::Image.new(:agent           => dedicated["image"]["has_agent"],
-                                         :deployable_type => dedicated["image"]["deployable_type"],
-                                         :default         => dedicated["image"]["is_default"],
-                                         :creation_time   => dedicated["image"]["create_time"],
-                                         :id              => dedicated["image"]["id"],
-                                         :max_cpu         => dedicated["image"]["max_cpu"],
-                                         :active          => dedicated["image"]["is_active"],
-                                         :base_type       => dedicated["image"]["base_type"],
-                                         :max_memory      => dedicated["image"]["max_memory"],
-                                         :name            => dedicated["image"]["friendly_name"],
-                                         :arch            => dedicated["image"]["architecture"])
-                                         
-          servers.push(::NephoRuby::DedicatedServer.new(:id           => dedicated["id"],
-                                                        :memory       => dedicated["memory"],
-                                                        :power_state  => dedicated["power_status"],
-                                                        :hostname     => dedicated["hostname"],
-                                                        :created_at   => dedicated["create_time"],
-                                                        :ip_addresses => dedicated["ipaddresses"].split(", ").map { |i| IPAddr.new(i) },
-                                                        :image        => image))
+          servers.push(parse_dedicated_json(vm))
         end
       else
         raise InvalidServerType, "Only cloud or dedicated are valid server types"
       end
       
       servers
+    end
+    
+    def get_server(type, server_id)
+      case type
+      when :cloud
+        response = commit("server/cloud/#{server_id}/", "get", {})
+        
+        parse_cloud_json(response.data.first)
+      when :dedicated
+        response = commit("server/dedicated/#{server_id}/", "get", {})
+        
+        parse_dedicated_json(response.data.first)
+      end
     end
     
     # https://kb.nephoscale.com/api/server.html#servercloud
@@ -152,6 +128,7 @@ module NephoRuby
       
       for cred in response.data
         credentials.push(NephoRuby::Credential.new( :id           => cred["id"],
+                                                    :name         => cred["friendly_name"],
                                                     :password     => cred["password"],
                                                     :public_key   => cred["public_key"],
                                                     :private_key  => cred["private_key"],
@@ -159,6 +136,63 @@ module NephoRuby
       end
       
       credentials
+    end
+    
+    def create_credential(credential)
+      if credential.key?
+        response = commit("key/sshrsa/", "post", credential.to_params)
+        
+        response.data["id"]
+      else
+        response = commit("key/password/", "post", credential.to_params)
+        
+        response.data["id"]
+      end
+    end
+    
+    private
+    def parse_cloud_json(json)
+      image = ::NephoRuby::Image.new(:agent           => json["image"]["has_agent"],
+                                     :deployable_type => json["image"]["deployable_type"],
+                                     :default         => json["image"]["is_default"],
+                                     :creation_time   => json["image"]["create_time"],
+                                     :id              => json["image"]["id"],
+                                     :max_cpu         => json["image"]["max_cpu"],
+                                     :active          => json["image"]["is_active"],
+                                     :base_type       => json["image"]["base_type"],
+                                     :max_memory      => json["image"]["max_memory"],
+                                     :name            => json["image"]["friendly_name"],
+                                     :arch            => json["image"]["architecture"])
+                                     
+      ::NephoRuby::CloudServer.new( :id           => json["id"],
+                                    :memory       => json["memory"],
+                                    :power_state  => json["power_status"],
+                                    :hostname     => json["hostname"],
+                                    :ip_addresses => json["ipaddresses"].split(", ").map { |i| IPAddr.new(i) },
+                                    :created_at   => json["create_time"],
+                                    :image        => image)
+    end
+    
+    def parse_dedicated_json(json)
+      image = ::NephoRuby::Image.new(:agent           => json["image"]["has_agent"],
+                                     :deployable_type => json["image"]["deployable_type"],
+                                     :default         => json["image"]["is_default"],
+                                     :creation_time   => json["image"]["create_time"],
+                                     :id              => json["image"]["id"],
+                                     :max_cpu         => json["image"]["max_cpu"],
+                                     :active          => json["image"]["is_active"],
+                                     :base_type       => json["image"]["base_type"],
+                                     :max_memory      => json["image"]["max_memory"],
+                                     :name            => json["image"]["friendly_name"],
+                                     :arch            => json["image"]["architecture"])
+                                     
+      ::NephoRuby::DedicatedServer.new( :id           => json["id"],
+                                        :memory       => json["memory"],
+                                        :power_state  => json["power_status"],
+                                        :hostname     => json["hostname"],
+                                        :created_at   => json["create_time"],
+                                        :ip_addresses => json["ipaddresses"].split(", ").map { |i| IPAddr.new(i) },
+                                        :image        => image)
     end
   end
 end
