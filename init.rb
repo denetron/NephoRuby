@@ -1,7 +1,13 @@
 require 'json'
+require 'ipaddr'
+
+require 'lib/hash'
 require 'lib/api_methods'
 require 'lib/nepho_ruby'
 require 'lib/response'
+require 'lib/types/credential'
 require 'lib/types/server'
 require 'lib/types/cloud_server'
+require 'lib/types/dedicated_server'
 require 'lib/types/image'
+require 'lib/types/instance'

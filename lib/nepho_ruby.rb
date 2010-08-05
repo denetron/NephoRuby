@@ -30,19 +30,24 @@ module NephoRuby
       
       uri = URI.parse(self.sandbox? ? @@sandbox_url : @@production_url)
       
+      
+      request_uri = "/" + action + "?" + (verb == "get" ? params.to_http_params : "")
+      
       case verb
       when "get"
-        request = Net::HTTP::Get.new("/" + action)
+        request = Net::HTTP::Get.new(request_uri)
       when "post"
-        request = Net::HTTP::Post.new("/" + action)
+        request = Net::HTTP::Post.new(request_uri)
       when "put"
-        request = Net::HTTP::Put.new("/" + action)
+        request = Net::HTTP::Put.new(request_uri)
       when "delete"
-        request = Net::HTTP::Delete.new("/" + action)
+        request = Net::HTTP::Delete.new(request_uri)
       end
       
       request.basic_auth(self.username, self.password)
-      request.set_form_data(params)
+      request.set_form_data(params) unless verb == "get"
+      
+      puts request.body
       
       http = Net::HTTP.new(uri.host, uri.port)
       http.use_ssl = true
