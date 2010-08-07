@@ -17,7 +17,7 @@ module NephoRuby
         response = commit("server/dedicated/", "get", {})
         
         for dedicated in response.data
-          servers.push(parse_dedicated_json(vm))
+          servers.push(parse_dedicated_json(dedicated))
         end
       else
         raise InvalidServerType, "Only cloud or dedicated are valid server types"
@@ -94,19 +94,16 @@ module NephoRuby
       response = commit("image/server/", "get", {})
       
       for image in response.data
-        images.push(::NephoRuby::Image.new( :id               => image["id"],
-                                            :active           => image["is_active"],
-                                            :default          => image["is_default"],
-                                            :agent            => image["has_agent"],
-                                            :creation_time    => image["create_time"],
-                                            :max_cpu          => image["max_cpu"],
-                                            :max_memory       => image["max_memory"],
-                                            :arch             => image["architecture"],
-                                            :deployable_type  => image["deployable_type"],
-                                            :name             => image["friendly_name"]))
+        images.push(parse_image_json(image))
       end
       
       images
+    end
+    
+    def get_image(id)
+      response = commit("image/server/#{id}/", "get", {})
+      
+      parse_image_json(response.data.first)
     end
     
     # https://kb.nephoscale.com/api/quickstart.html#unassigned-public-ipv4-address-list
@@ -148,6 +145,55 @@ module NephoRuby
         
         response.data["id"]
       end
+    end
+    
+    def destroy_credential(credential)
+      if credential.key?
+        response = commit("key/sshrsa/#{credential.id}/", "delete", {})
+      else
+        response = commit("key/password/#{credential.id}/", "delete", {})
+      end
+    end
+    
+    def get_acl_groups
+      groups = []
+      response = commit("account/group/", "get", {})
+      
+      for group in response.data
+        groups.push(parse_group_json(group))
+      end
+      
+      groups
+    end
+    
+    def get_users
+      users = []
+      
+      response = commit("account/user/", "get", {})
+      
+      for user in response.data
+        users.push(parse_user_json(user))
+      end
+      
+      users
+    end
+    
+    def create_user(user)
+      response = commit("account/user/", "post", user.to_params)
+      
+      response.data["id"]
+    end
+    
+    def update_user(user)
+      response = commit("account/user/#{user.id}/", "put", user.to_params)
+      
+      response.data["id"]
+    end
+    
+    def destroy_user(user)
+      response = commit("account/user/#{user.id}/", "delete")
+      
+      response.data["id"]
     end
     
     private
@@ -193,6 +239,33 @@ module NephoRuby
                                         :created_at   => json["create_time"],
                                         :ip_addresses => json["ipaddresses"].split(", ").map { |i| IPAddr.new(i) },
                                         :image        => image)
+    end
+    
+    def parse_image_json(json)
+      ::NephoRuby::Image.new( :id               => json["id"],
+                              :active           => json["is_active"],
+                              :default          => json["is_default"],
+                              :agent            => json["has_agent"],
+                              :creation_time    => json["create_time"],
+                              :max_cpu          => json["max_cpu"],
+                              :max_memory       => json["max_memory"],
+                              :arch             => json["architecture"],
+                              :deployable_type  => json["deployable_type"],
+                              :name             => json["friendly_name"])
+    end
+    
+    def parse_group_json(json)
+      ::NephoRuby::AclGroup.new(:id   => json["id"],
+                                :name => json["name"])
+    end
+    
+    def parse_user_json(json)
+      ::NephoRuby::User.new(:id         => json["id"],
+                            :username   => json["username"],
+                            :first_name => json["first_name"],
+                            :last_name  => json["last_name"],
+                            :email      => json["email"],
+                            :phone      => json["phone"])
     end
   end
 end
