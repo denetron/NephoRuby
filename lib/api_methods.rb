@@ -1,3 +1,12 @@
+# The NephoRuby module contains all the classes and methods necessary
+# to interact with the NephoScale API.  Currently there is no sandbox,
+# so all experimentation must be done in "production".
+# Keep this in mind before destroying objects.
+#
+# Author::    Daniel Ballenger (mailto:dballenger@denetron.com)
+# Copyright:: Copyright (c) 2010 Daniel Ballenger
+# License::   MIT
+
 module NephoRuby
   module ApiMethods
     
@@ -26,6 +35,8 @@ module NephoRuby
       servers
     end
     
+    # https://kb.nephoscale.com/api/server.html#servercloud
+    # https://kb.nephoscale.com/api/server.html#serverdedicated
     def get_server(type, server_id)
       case type
       when :cloud
@@ -52,6 +63,8 @@ module NephoRuby
       end
     end
     
+    # https://kb.nephoscale.com/api/server.html#servercloudpower
+    # https://kb.nephoscale.com/api/server.html#serverdedicatedpower
     def power_control(server, action)
       case server.class.to_s
       when "NephoRuby::CloudServer"
@@ -61,6 +74,8 @@ module NephoRuby
       end
     end
     
+    # https://kb.nephoscale.com/api/server.html#servercloud
+    # https://kb.nephoscale.com/api/server.html#serverdedicated
     def destroy_server(server)
       case server.class.to_s
       when "NephoRuby::CloudServer"
@@ -100,6 +115,7 @@ module NephoRuby
       images
     end
     
+    # https://kb.nephoscale.com/api/image.html#server
     def get_image(id)
       response = commit("image/server/#{id}/", "get", {})
       
@@ -118,7 +134,7 @@ module NephoRuby
       addresses
     end
     
-    
+    # https://kb.nephoscale.com/api/key.html
     def get_credentials
       credentials = []
       response = commit("key/", "get", {})
@@ -135,6 +151,7 @@ module NephoRuby
       credentials
     end
     
+    # https://kb.nephoscale.com/api/key.html
     def create_credential(credential)
       if credential.key?
         response = commit("key/sshrsa/", "post", credential.to_params)
@@ -147,6 +164,7 @@ module NephoRuby
       end
     end
     
+    # https://kb.nephoscale.com/api/key.html
     def destroy_credential(credential)
       if credential.key?
         response = commit("key/sshrsa/#{credential.id}/", "delete", {})
@@ -155,6 +173,7 @@ module NephoRuby
       end
     end
     
+    # https://kb.nephoscale.com/api/account.html#group
     def get_acl_groups
       groups = []
       response = commit("account/group/", "get", {})
@@ -166,6 +185,7 @@ module NephoRuby
       groups
     end
     
+    # https://kb.nephoscale.com/api/account.html#user
     def get_users
       users = []
       
@@ -178,18 +198,21 @@ module NephoRuby
       users
     end
     
+    # https://kb.nephoscale.com/api/account.html#user
     def create_user(user)
       response = commit("account/user/", "post", user.to_params)
       
       response.data["id"]
     end
     
+    # https://kb.nephoscale.com/api/account.html#user
     def update_user(user)
       response = commit("account/user/#{user.id}/", "put", user.to_params)
       
       response.data["id"]
     end
     
+    # https://kb.nephoscale.com/api/account.html#user
     def destroy_user(user)
       response = commit("account/user/#{user.id}/", "delete")
       

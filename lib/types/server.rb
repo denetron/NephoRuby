@@ -1,3 +1,10 @@
+# The base server object, with the standard attributes for servers
+# across both cloud and dedicated environments
+#
+# Author::    Daniel Ballenger (mailto:dballenger@denetron.com)
+# Copyright:: Copyright (c) 2010 Daniel Ballenger
+# License::   MIT
+
 module NephoRuby
   class Server
     attr_accessor :id, :memory, :power_state, :hostname, :ip_addresses, :created_at, :image, :instance_type, :credential
