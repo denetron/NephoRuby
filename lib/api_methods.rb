@@ -221,17 +221,7 @@ module NephoRuby
     
     private
     def parse_cloud_json(json)
-      image = ::NephoRuby::Image.new(:agent           => json["image"]["has_agent"],
-                                     :deployable_type => json["image"]["deployable_type"],
-                                     :default         => json["image"]["is_default"],
-                                     :creation_time   => json["image"]["create_time"],
-                                     :id              => json["image"]["id"],
-                                     :max_cpu         => json["image"]["max_cpu"],
-                                     :active          => json["image"]["is_active"],
-                                     :base_type       => json["image"]["base_type"],
-                                     :max_memory      => json["image"]["max_memory"],
-                                     :name            => json["image"]["friendly_name"],
-                                     :arch            => json["image"]["architecture"])
+      image = parse_image_json(json["image"])
                                      
       ::NephoRuby::CloudServer.new( :id           => json["id"],
                                     :memory       => json["memory"],
@@ -243,17 +233,7 @@ module NephoRuby
     end
     
     def parse_dedicated_json(json)
-      image = ::NephoRuby::Image.new(:agent           => json["image"]["has_agent"],
-                                     :deployable_type => json["image"]["deployable_type"],
-                                     :default         => json["image"]["is_default"],
-                                     :creation_time   => json["image"]["create_time"],
-                                     :id              => json["image"]["id"],
-                                     :max_cpu         => json["image"]["max_cpu"],
-                                     :active          => json["image"]["is_active"],
-                                     :base_type       => json["image"]["base_type"],
-                                     :max_memory      => json["image"]["max_memory"],
-                                     :name            => json["image"]["friendly_name"],
-                                     :arch            => json["image"]["architecture"])
+      image = parse_image_json(json["image"]))
                                      
       ::NephoRuby::DedicatedServer.new( :id           => json["id"],
                                         :memory       => json["memory"],
@@ -274,7 +254,8 @@ module NephoRuby
                               :max_memory       => json["max_memory"],
                               :arch             => json["architecture"],
                               :deployable_type  => json["deployable_type"],
-                              :name             => json["friendly_name"])
+                              :name             => json["friendly_name"],
+                              :base_type        => json["base_type"])
     end
     
     def parse_group_json(json)
