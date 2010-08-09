@@ -87,7 +87,7 @@ module NephoRuby
       end
       
       request.basic_auth(self.username, self.password)
-      request.set_form_data(params.to_json) unless verb == "get"
+      request.set_form_data(params) unless verb == "get"
       
       http = Net::HTTP.new(uri.host, uri.port)
       http.use_ssl = true
