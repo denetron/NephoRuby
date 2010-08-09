@@ -12,6 +12,8 @@ module NephoRuby
     
     # https://kb.nephoscale.com/api/server.html#servercloud
     # https://kb.nephoscale.com/api/server.html#serverdedicated
+    #
+    # Type should be one of [:cloud, :dedicated]
     def get_servers(type)
       servers = []
       
@@ -93,14 +95,16 @@ module NephoRuby
       response = commit("server/type/cloud/", "get", {})
       
       for instance in response.data
-        instances.push(::NephoRuby::Instance.new( :id           => instance["id"],
-                                                  :ram          => instance["ram"],
-                                                  :storage      => instance["storage"],
-                                                  :name         => instance["name"],
-                                                  :description  => instance["description"]))
+        instances.push(parse_instance_json(instance))
       end
       
       instances
+    end
+    
+    def get_instance(id)
+      response = commit("server/type/cloud/#{id}/", "get", {})
+      
+      parse_instance_json(response.data.first)
     end
     
     # https://kb.nephoscale.com/api/quickstart.html#image-list
@@ -233,7 +237,7 @@ module NephoRuby
     end
     
     def parse_dedicated_json(json)
-      image = parse_image_json(json["image"]))
+      image = parse_image_json(json["image"])
                                      
       ::NephoRuby::DedicatedServer.new( :id           => json["id"],
                                         :memory       => json["memory"],
@@ -242,6 +246,14 @@ module NephoRuby
                                         :created_at   => json["create_time"],
                                         :ip_addresses => json["ipaddresses"].split(", ").map { |i| IPAddr.new(i) },
                                         :image        => image)
+    end
+    
+    def parse_instance_json(json)
+      ::NephoRuby::Instance.new(:id           => json["id"],
+                                :ram          => json["ram"],
+                                :storage      => json["storage"],
+                                :name         => json["sku"]["name"],
+                                :description  => json["sku"]["description"])
     end
     
     def parse_image_json(json)

@@ -1,3 +1,6 @@
+# RDoc
+# :main:lib/nepho_ruby.rb
+
 require 'json'
 require 'ipaddr'
 
